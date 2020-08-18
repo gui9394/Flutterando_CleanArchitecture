@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:hello_word/module/search/presenter/search/search_bloc.dart';
+import 'package:hello_word/module/search/domain/entity/result_search.dart';
+import 'package:hello_word/module/search/presenter/search/search_store.dart';
 import 'package:hello_word/module/search/presenter/search/states/state.dart';
 
 class SearchPage extends StatefulWidget {
@@ -8,15 +10,7 @@ class SearchPage extends StatefulWidget {
   _SearchPageState createState() => _SearchPageState();
 }
 
-class _SearchPageState extends State<SearchPage> {
-  final bloc = Modular.get<SearchBloc>();
-
-  @override
-  void dispose() {
-    super.dispose();
-    bloc.close();
-  }
-
+class _SearchPageState extends ModularState<SearchPage, SearchStore> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,7 +22,7 @@ class _SearchPageState extends State<SearchPage> {
           Padding(
             padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
             child: TextField(
-              onChanged: bloc.add,
+              onChanged: controller.setSearchText,
               decoration: InputDecoration(
                   border: OutlineInputBorder(), labelText: 'Search'),
             ),
@@ -40,44 +34,47 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget _resultList() {
-    return StreamBuilder<Object>(
-        stream: bloc,
-        builder: (context, snapshot) {
-          final state = bloc.state;
+    return Observer(builder: (_) {
+      final state = controller.state;
 
-          if (state is SearchStart) {
-            return Center(
-              child: Text('Digite um texto'),
-            );
-          }
+      if (state is SearchStart) {
+        return Center(
+          child: Text('Digite um texto'),
+        );
+      }
 
-          if (state is SearchError) {
-            return Center(
-              child: Text('Houve um erro'),
-            );
-          }
+      if (state is SearchError) {
+        return Center(
+          child: Text('Houve um erro'),
+        );
+      }
 
-          if (state is SearchLoading) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          }
+      if (state is SearchLoading) {
+        return Center(
+          child: CircularProgressIndicator(),
+        );
+      }
 
-          final list = (state as SearchSucess).list;
-          return ListView.builder(
+      final list = (state as SearchSucess).list;
+      return (list.isEmpty)
+          ? Center(
+              child: Text('Nenhum resultado encontrado'),
+            )
+          : ListView.builder(
               itemCount: list.length,
-              itemBuilder: (_, id) {
-                final item = list[id];
-                return ListTile(
-                  leading: (item.img == null)
-                      ? Container()
-                      : CircleAvatar(
-                          backgroundImage: NetworkImage(item.img),
-                        ),
-                  title: Text(item.title ?? ''),
-                  subtitle: Text(item.content ?? ''),
-                );
-              });
-        });
+              itemBuilder: (_, id) => _itemList(list[id]));
+    });
+  }
+
+  Widget _itemList(ResultSearch item) {
+    return ListTile(
+      leading: (item.img == null)
+          ? Container()
+          : CircleAvatar(
+              backgroundImage: NetworkImage(item.img),
+            ),
+      title: Text(item.title ?? ''),
+      subtitle: Text(item.content ?? ''),
+    );
   }
 }
