@@ -1,8 +1,12 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:hello_word/module/search/domain/entity/result_search.dart';
 import 'package:hello_word/module/search/domain/error/errors.dart';
 import 'package:hello_word/module/search/infra/datasource/search_data_source.dart';
 
+part 'github_datasource.g.dart';
+
+@Injectable()
 class GitHubDatasource implements SearchDatasource {
   final Dio dio;
 

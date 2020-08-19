@@ -12,10 +12,10 @@ class AppModule extends MainModule {
   @override
   List<Bind> get binds => [
         Bind<Dio>((i) => Dio()),
-        Bind((i) => SerachByTextImpl(i())),
-        Bind((i) => SearchRepositoryImpl(i())),
-        Bind((i) => GitHubDatasource(i())),
-        Bind((i) => SearchStore(i())),
+        $SerachByTextImpl,
+        $SearchRepositoryImpl,
+        $GitHubDatasource,
+        $SearchStore,
       ];
 
   @override
